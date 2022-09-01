@@ -1,36 +1,30 @@
-import React, { Component } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Modal } from '../Modal';
 import { ImageCard, ImageWrap } from './ImageGalleryItem.styled';
 
-export class ImageGalleryItem extends Component {
-  static defaultProps = {
-    tag: PropTypes.string.isRequired,
-    smallImage: PropTypes.string.isRequired,
-    largeImage: PropTypes.string.isRequired,
-  };
+const ImageGalleryItem = ({ smallImage, largeImage, tag }) => {
+  const [isShow, setIsShow] = useState(false);
 
-  state = {
-    isShow: false,
-  };
+  const toggleModal = () => setIsShow(state => !state);
 
-  toggleModal = () =>
-    this.setState(prevState => ({ isShow: !prevState.isShow }));
+  return (
+    <ImageCard onClick={toggleModal}>
+      <ImageWrap>
+        <img src={smallImage} alt={tag} />
+      </ImageWrap>
 
-  render() {
-    const { isShow } = this.state;
-    const { smallImage, largeImage, tag } = this.props;
+      {isShow && (
+        <Modal largeImage={largeImage} tag={tag} onClose={toggleModal} />
+      )}
+    </ImageCard>
+  );
+};
 
-    return (
-      <ImageCard onClick={this.toggleModal}>
-        <ImageWrap>
-          <img src={smallImage} alt={tag} />
-        </ImageWrap>
+ImageGalleryItem.propTypes = {
+  tag: PropTypes.string.isRequired,
+  smallImage: PropTypes.string.isRequired,
+  largeImage: PropTypes.string.isRequired,
+};
 
-        {isShow && (
-          <Modal largeImage={largeImage} tag={tag} onClose={this.toggleModal} />
-        )}
-      </ImageCard>
-    );
-  }
-}
+export { ImageGalleryItem };
