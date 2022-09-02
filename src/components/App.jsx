@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useFirstMountState } from 'react-use';
 import { toast } from 'react-toastify';
 import { Searchbar } from './Searchbar';
 import { ImageGallery } from './ImageGallery';
@@ -6,142 +7,136 @@ import { Button } from './Button';
 import { Loader } from './Loader';
 import { ErrorMessage } from './ErrorMessage';
 import * as API from '../services';
-
 import 'react-toastify/dist/ReactToastify.css';
 
-const STATUS = {
+const Status = {
   IDLE: 'idle',
   PENDING: 'pending',
   RESOLVED: 'resolved',
   REJECTED: 'rejected',
 };
 
-export class App extends Component {
-  state = {
-    images: [],
-    query: '',
-    page: 1,
-    isShowLoadMore: true,
-    status: STATUS.IDLE,
-  };
+const perPage = 12;
 
-  perPage = 12;
+const App = () => {
+  const [images, setImages] = useState([]);
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [isShowLoadMore, setIsShowLoadMore] = useState(true);
+  const [status, setStatus] = useState(Status.IDLE);
+  const [totalHits, setTotalHits] = useState(null);
 
-  async componentDidUpdate(_, prevState) {
-    const { query, page, images } = this.state;
+  const isFirstMount = useFirstMountState();
 
-    try {
-      if (
-        prevState.query !== query ||
-        prevState.page !== page ||
-        prevState.images > images
-      ) {
-        const data = await API.getImages(query, page);
-
-        if (data.totalHits === 0) {
-          this.setState({ status: STATUS.RESOLVED });
-          return this.notFindedImagesNotification();
-        }
-
-        if (
-          prevState.page === page ||
-          prevState.query !== query ||
-          prevState.images > images
-        ) {
-          this.successFindedImages(data.totalHits);
-        }
-
-        if (data.totalHits < this.perPage * page) {
-          this.notLoadMoreImagesNotification();
-          return this.setState(prevState => ({
-            images: [...prevState.images, ...data.hits],
-            status: STATUS.RESOLVED,
-            isShowLoadMore: !prevState.isShowLoadMore,
-          }));
-        }
-        return this.setState(prevState => ({
-          images: [...prevState.images, ...data.hits],
-          status: STATUS.RESOLVED,
-        }));
-      }
-    } catch (error) {
-      this.setState({ status: STATUS.REJECTED });
-      this.errorNotification(error);
+  useEffect(() => {
+    if (isFirstMount) {
+      return;
     }
-  }
 
-  handleSubmit = query => {
-    this.setState({
-      query,
-      page: 1,
-      images: [],
-      status: STATUS.PENDING,
-      isShowLoadMore: true,
-    });
+    async function fetchImagesFromPixabay() {
+      try {
+        const data = await API.getImages(query, page, perPage);
+        setTotalHits(data.totalHits);
+
+        if (data.totalHits < perPage * page && data.hits.length !== 0) {
+          notLoadMoreImagesNotification();
+          setImages(state => [...state, ...data.hits]);
+          setStatus(Status.RESOLVED);
+          setIsShowLoadMore(state => !state);
+          return;
+        }
+        setImages(state => [...state, ...data.hits]);
+        setStatus(Status.RESOLVED);
+        return;
+      } catch (error) {
+        setStatus(Status.REJECTED);
+        errorNotification(error);
+      }
+    }
+    fetchImagesFromPixabay();
+  }, [isFirstMount, page, query]);
+
+  useEffect(() => {
+    if (totalHits === 0) {
+      setStatus(Status.RESOLVED);
+      return notFindedImagesNotification();
+    }
+  }, [totalHits]);
+
+  useEffect(() => {
+    if (totalHits > 0) {
+      successFindedImagesNotification(totalHits);
+    }
+  }, [totalHits, query]);
+
+  const handleSubmit = query => {
+    setQuery(query);
+    setPage(1);
+    setImages([]);
+    setTotalHits(null);
+    setIsShowLoadMore(true);
+    setStatus(Status.PENDING);
   };
 
-  loadMoreImages = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-      status: STATUS.PENDING,
-    }));
+  const loadMoreImages = () => {
+    setPage(state => state + 1);
+    setStatus(Status.PENDING);
   };
 
-  successFindedImages = count => {
+  const successFindedImagesNotification = count => {
     toast.success(`Hurra, we finded ${count} images`);
   };
 
-  notFindedImagesNotification = () => {
+  const notFindedImagesNotification = () => {
     toast.warning('Whoops not finded images. Please enter correct keyword');
   };
 
-  notLoadMoreImagesNotification = () => {
+  const notLoadMoreImagesNotification = () => {
     toast.info(
       'Sorry, you have uploaded all images with this keyword, please try another word'
     );
   };
 
-  errorNotification = error => {
+  const errorNotification = error => {
     toast.error(error.message);
   };
 
-  render() {
-    const { images, status, isShowLoadMore } = this.state;
-    const hasImages = images.length > 0;
+  const hasImages = images.length > 0;
 
-    if (status === STATUS.IDLE) {
-      return <Searchbar onSubmit={this.handleSubmit} />;
-    }
-
-    if (status === STATUS.PENDING) {
-      return (
-        <>
-          <Searchbar onSubmit={this.handleSubmit} />
-          {hasImages && <ImageGallery items={images} />}
-          <Loader hasImages={hasImages} />
-        </>
-      );
-    }
-
-    if (status === STATUS.RESOLVED) {
-      return (
-        <>
-          <Searchbar onSubmit={this.handleSubmit} />
-          {hasImages && <ImageGallery items={images} />}
-          {hasImages && isShowLoadMore && (
-            <Button onClick={this.loadMoreImages}>Load more</Button>
-          )}
-        </>
-      );
-    }
-
-    if (status === STATUS.REJECTED) {
-      return (
-        <>
-          <Searchbar onSubmit={this.handleSubmit} />
-          <ErrorMessage text="Something went wrong😢. Please try again later" />
-        </>
-      );
-    }
+  if (status === Status.IDLE) {
+    return <Searchbar onSubmit={handleSubmit} />;
   }
-}
+
+  if (status === Status.PENDING) {
+    return (
+      <>
+        <Searchbar onSubmit={handleSubmit} />
+        {hasImages && <ImageGallery items={images} />}
+        <Loader hasImages={hasImages} />
+      </>
+    );
+  }
+
+  if (status === Status.RESOLVED) {
+    return (
+      <>
+        <Searchbar onSubmit={handleSubmit} />
+        {hasImages && <ImageGallery items={images} />}
+        {hasImages && isShowLoadMore && (
+          <Button onClick={loadMoreImages}>Load more</Button>
+        )}
+      </>
+    );
+  }
+
+  if (status === Status.REJECTED) {
+    return (
+      <>
+        <Searchbar onSubmit={handleSubmit} />
+        <ErrorMessage text="Something went wrong😢. Please try again later" />
+      </>
+    );
+  }
+};
+
+export { App };
