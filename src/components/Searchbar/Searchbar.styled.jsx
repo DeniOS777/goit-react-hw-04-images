@@ -15,7 +15,7 @@ export const Input = styled.input`
   border-radius: ${p => p.theme.radii[4]};
 
   &:focus {
-    outline: 2px solid ${p => p.theme.colors.focus};
+    outline: ${p => p.theme.borders.medium} ${p => p.theme.colors.focus};
   }
 `;
 

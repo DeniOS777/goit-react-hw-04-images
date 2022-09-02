@@ -5,7 +5,10 @@ export const LoadMore = styled.button`
   align-items: center;
   justify-content: center;
   margin: 0 auto;
-  padding: 10px 25px;
+  padding-top: ${p => p.theme.space[2]}px;
+  padding-bottom: ${p => p.theme.space[2]}px;
+  padding-left: ${p => p.theme.space[4]}px;
+  padding-right: ${p => p.theme.space[4]}px;
   color: ${p => p.theme.colors.white};
   background-color: ${p => p.theme.colors.blue};
   border-style: none;

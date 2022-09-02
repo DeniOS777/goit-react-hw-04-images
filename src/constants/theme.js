@@ -12,6 +12,25 @@ export const theme = {
 
   space: [0, 4, 8, 16, 32, 64, 128, 256, 512],
 
+  fontWeights: {
+    normal: 400,
+    bold: 700,
+  },
+
+  lineHeights: {
+    body: 1.5,
+    heading: 1.125,
+  },
+
+  fontSizes: {
+    xs: '12px',
+    s: '14px',
+    m: '16px',
+    lm: '20px',
+    l: '32px',
+    xl: '64px',
+  },
+
   borders: {
     normal: '1px solid',
     medium: '2px solid',
