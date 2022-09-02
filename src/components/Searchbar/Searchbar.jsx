@@ -32,6 +32,7 @@ const Searchbar = ({ onSubmit }) => {
       p={2}
       width="100%"
       bg="blue"
+      boxShadow="0px 10px 13px -7px #000000, 5px 5px 15px 5px rgba(0,0,0,0)"
     >
       <Form onSubmit={handleSubmit}>
         <Input
