@@ -107,22 +107,13 @@ const App = () => {
     return <Searchbar onSubmit={handleSubmit} />;
   }
 
-  if (status === Status.PENDING) {
+  if (status === Status.PENDING || status === Status.RESOLVED) {
     return (
       <>
         <Searchbar onSubmit={handleSubmit} />
         {hasImages && <ImageGallery items={images} />}
-        <Loader hasImages={hasImages} />
-      </>
-    );
-  }
-
-  if (status === Status.RESOLVED) {
-    return (
-      <>
-        <Searchbar onSubmit={handleSubmit} />
-        {hasImages && <ImageGallery items={images} />}
-        {hasImages && isShowLoadMore && (
+        {status === Status.PENDING && <Loader hasImages={hasImages} />}
+        {status === Status.RESOLVED && hasImages && isShowLoadMore && (
           <Button onClick={loadMoreImages}>Load more</Button>
         )}
       </>
