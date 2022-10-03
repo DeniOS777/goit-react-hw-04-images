@@ -2,6 +2,7 @@ import styled from 'styled-components';
 
 export const Backdrop = styled.div`
   position: fixed;
+  z-index: ${p => p.theme.zIndices[2]};
   top: 0;
   left: 0;
   width: 100vw;

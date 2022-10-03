@@ -12,6 +12,8 @@ export const theme = {
 
   space: [0, 4, 8, 16, 32, 64, 128, 256, 512],
 
+  zIndices: [0, 5, 10, 20, 40, 80, 160, 320],
+
   fontWeights: {
     normal: 400,
     bold: 700,

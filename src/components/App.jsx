@@ -103,7 +103,7 @@ const App = () => {
 
   const hasImages = images.length > 0;
 
-  if (status === Status.IDLE) {
+  if (status === Status.IDLE || status === Status.REJECTED) {
     return <Searchbar onSubmit={handleSubmit} />;
   }
 
@@ -122,10 +122,7 @@ const App = () => {
 
   if (status === Status.REJECTED) {
     return (
-      <>
-        <Searchbar onSubmit={handleSubmit} />
-        <ErrorMessage text="Something went wrong😢. Please try again later" />
-      </>
+      <ErrorMessage text="Something went wrong😢. Please try again later" />
     );
   }
 };

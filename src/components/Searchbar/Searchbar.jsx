@@ -27,6 +27,7 @@ const Searchbar = ({ onSubmit }) => {
     <Box
       as="header"
       position="fixed"
+      zIndex={1}
       display="flex"
       justifyContent="center"
       p={2}
